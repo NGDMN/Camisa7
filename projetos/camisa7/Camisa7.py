@@ -7,14 +7,6 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 import logging
-import time
-import subprocess
-import json
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-import logging
 
 # Configuração de log com data e hora
 logging.basicConfig(filename=r"C:\Users\Neil\OneDrive\Documentos\Python\Projetos\log_acesso_site.log",
@@ -22,23 +14,23 @@ logging.basicConfig(filename=r"C:\Users\Neil\OneDrive\Documentos\Python\Projetos
                     format="%(asctime)s - %(message)s",
                     datefmt='%Y-%m-%d %H:%M:%S')
 
+
 def carregar_credenciais_do_bitwarden(item_id):
     try:
         # É necessário trocar acessar manualmente e trocar a chave de acesso sempre que 
         session_key = "+n1xDjtilzJ5ZuXU16/RQxCQObjrbHNKCpMsdMgB3F1kZxTyyJ0tlBnlo/8q6vMUWiN3g4KM2LOlQ3V6pRUDnA=="
-                
+
         # Obtenha o item especificado
         result = subprocess.run(["bw", "get", "item", item_id, "--session", session_key], capture_output=True, text=True)
         item = json.loads(result.stdout)
         email = item['login']['username']
         senha = item['login']['password']
         return {"email": email, "senha": senha}
-
     except Exception as e:
         logging.error(f"Erro ao carregar credenciais do Bitwarden: {e}")
         return None
 
-# Função principal que executa o acesso ao site
+
 def acessar_site():
     try:
         # Carrega as credenciais do Bitwarden
@@ -48,30 +40,30 @@ def acessar_site():
             return
         email_bitwarden = credenciais["email"]
         senha_bitwarden = credenciais["senha"]
-        
+
         # Configurações para rodar o Chrome com o perfil padrão
         chrome_options = Options()
         chrome_options.add_argument("--headless")  # Remova esta linha para depurar
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
-        
+
         # Configura o caminho do ChromeDriver
         service = Service(r"C:\Users\Neil\Downloads\chromedriver-win64\chromedriver-win64\chromedriver.exe")
-        
+
         # Inicializa o navegador com o serviço e opções
         driver = webdriver.Chrome(service=service, options=chrome_options)
-        
+
         # Acessa o site
         driver.get("https://camisa7.botafogo.com.br/entrar")
         time.sleep(3)
-        
+
         # Verifica se o login é necessário
         try:
             Email_CPF = driver.find_element(By.ID, 'mat-input-0')
             Senha = driver.find_element(By.ID, 'mat-input-1')
             Btn_Entrar = driver.find_element(By.CSS_SELECTOR, 'button.feng-btn.feng-btn--primary.feng-btn--medium[type="submit"]')
-            
+
             if Email_CPF:
                 # Login
                 Email_CPF.send_keys(email_bitwarden)
@@ -85,25 +77,26 @@ def acessar_site():
         # Acessa a página de experiências
         driver.get("https://camisa7.botafogo.com.br/experiencias")
         time.sleep(3)
-
+        
         # Fecha o navegador
         driver.quit()
+
         # Log de sucesso com data e hora
         logging.info("Acesso ao site realizado com sucesso.")
         quit()
-        
     except Exception as e:
         # Log de erro em caso de falha, com data e hora
         logging.error(f"Falha ao acessar o site: {e}")
         quit()
+
+
+if __name__ == "__main__":
+    acessar_site()
     
-# Executa a função de acesso ao site
-acessar_site()
+    # Agendar o script para rodar diariamente às 5 da manhã
+    schedule.every().day.at("05:00").do(acessar_site)
 
-#Agendar o script para rodar diariamente às 5 da manhã
-schedule.every().day.at("05:00").do(acessar_site)
-
-#Loop para manter o agendamento ativo
-while True:
-     schedule.run_pending()
-     time.sleep(60)
+    # Loop para manter o agendamento ativo
+    while True:
+        schedule.run_pending()
+        time.sleep(60)
