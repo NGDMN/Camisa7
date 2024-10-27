@@ -9,27 +9,27 @@ from selenium.webdriver.common.by import By
 import logging
 
 # Configuração de log com data e hora
-logging.basicConfig(filename=r"C:\Users\Neil\OneDrive\Documentos\Python\Projetos\log_acesso_site.log",
+logging.basicConfig(filename=r"C:\Users\Neil\OneDrive\Documentos\Python\Projetos\Camisa7\log_acesso_site.log",
                     level=logging.INFO,
                     format="%(asctime)s - %(message)s",
                     datefmt='%Y-%m-%d %H:%M:%S')
 
-
 def carregar_credenciais_do_bitwarden(item_id):
     try:
-        # É necessário trocar acessar manualmente e trocar a chave de acesso sempre que 
-        session_key = "+n1xDjtilzJ5ZuXU16/RQxCQObjrbHNKCpMsdMgB3F1kZxTyyJ0tlBnlo/8q6vMUWiN3g4KM2LOlQ3V6pRUDnA=="
-
-        # Obtenha o item especificado
+        # Troque manualmente a chave de sessão sempre que necessário
+        session_key = "nW00OMjo4BrKJ7ElnzPENllzKEZWuZui4hYWvvCgnBiHOJn0T1lTjkaMlffwdNTcecoJtUoksRth6c0F/yxKug=="
+        
+        # Obtenha o item especificado do Bitwarden
         result = subprocess.run(["bw", "get", "item", item_id, "--session", session_key], capture_output=True, text=True)
         item = json.loads(result.stdout)
+        
+        # Extraia o e-mail e a senha
         email = item['login']['username']
         senha = item['login']['password']
         return {"email": email, "senha": senha}
     except Exception as e:
         logging.error(f"Erro ao carregar credenciais do Bitwarden: {e}")
         return None
-
 
 def acessar_site():
     try:
@@ -38,32 +38,33 @@ def acessar_site():
         if credenciais is None:
             logging.error("Falha ao carregar as credenciais do Bitwarden. Abortando...")
             return
+        
         email_bitwarden = credenciais["email"]
         senha_bitwarden = credenciais["senha"]
-
+        
         # Configurações para rodar o Chrome com o perfil padrão
         chrome_options = Options()
         chrome_options.add_argument("--headless")  # Remova esta linha para depurar
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
-
+        
         # Configura o caminho do ChromeDriver
         service = Service(r"C:\Users\Neil\Downloads\chromedriver-win64\chromedriver-win64\chromedriver.exe")
-
+        
         # Inicializa o navegador com o serviço e opções
         driver = webdriver.Chrome(service=service, options=chrome_options)
-
+        time.sleep(5)
         # Acessa o site
         driver.get("https://camisa7.botafogo.com.br/entrar")
         time.sleep(3)
-
+        
         # Verifica se o login é necessário
         try:
             Email_CPF = driver.find_element(By.ID, 'mat-input-0')
             Senha = driver.find_element(By.ID, 'mat-input-1')
             Btn_Entrar = driver.find_element(By.CSS_SELECTOR, 'button.feng-btn.feng-btn--primary.feng-btn--medium[type="submit"]')
-
+            
             if Email_CPF:
                 # Login
                 Email_CPF.send_keys(email_bitwarden)
@@ -72,23 +73,20 @@ def acessar_site():
                 Btn_Entrar.click()
                 time.sleep(3)
         except Exception as e:
-            print("Login não necessário ou erro ao preencher os campos:", e)
-
+            logging.error(f"Erro ao realizar o login: {e}")
+        
         # Acessa a página de experiências
         driver.get("https://camisa7.botafogo.com.br/experiencias")
         time.sleep(3)
         
         # Fecha o navegador
         driver.quit()
-
+        
         # Log de sucesso com data e hora
         logging.info("Acesso ao site realizado com sucesso.")
-        quit()
     except Exception as e:
         # Log de erro em caso de falha, com data e hora
         logging.error(f"Falha ao acessar o site: {e}")
-        quit()
-
 
 if __name__ == "__main__":
     acessar_site()
