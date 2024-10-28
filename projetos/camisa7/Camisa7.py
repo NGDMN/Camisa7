@@ -44,7 +44,7 @@ def acessar_site():
         
         # Configurações para rodar o Chrome com o perfil padrão
         chrome_options = Options()
-        chrome_options.add_argument("--headless")  # Remova esta linha para depurar
+        #chrome_options.add_argument("--headless")  # Remova esta linha para depurar
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
@@ -91,10 +91,4 @@ def acessar_site():
 if __name__ == "__main__":
     acessar_site()
     
-    # Agendar o script para rodar diariamente às 5 da manhã
-    schedule.every().day.at("05:00").do(acessar_site)
-
-    # Loop para manter o agendamento ativo
-    while True:
-        schedule.run_pending()
-        time.sleep(60)
+   
