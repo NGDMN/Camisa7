@@ -1,11 +1,12 @@
 import time
-import schedule
 import subprocess
 import json
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import logging
 
 # Configuração de log com data e hora
@@ -44,7 +45,7 @@ def acessar_site():
         
         # Configurações para rodar o Chrome com o perfil padrão
         chrome_options = Options()
-        #chrome_options.add_argument("--headless")  # Remova esta linha para depurar
+        chrome_options.add_argument("--headless")  # Remova esta linha para depurar
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
@@ -76,19 +77,24 @@ def acessar_site():
             logging.error(f"Erro ao realizar o login: {e}")
         
         # Acessa a página de experiências
-        driver.get("https://camisa7.botafogo.com.br/experiencias")
-        time.sleep(3)
+        #driver.get("https://camisa7.botafogo.com.br/experiencias/extrato")
+        #time.sleep(3)
         
+        # Localiza o total de pontos no saldo
+        try:
+            wait = WebDriverWait(driver, 3)
+            saldo_element = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, 'p.home-experiences__points strong')))
+            saldo = saldo_element.text
+            logging.info(f"Saldo de pontos: {saldo}")
+        except Exception as e:
+            logging.error(f"Erro ao localizar o saldo de pontos: {e}")
+
         # Fecha o navegador
         driver.quit()
-        
-        # Log de sucesso com data e hora
-        logging.info("Acesso ao site realizado com sucesso.")
+
     except Exception as e:
         # Log de erro em caso de falha, com data e hora
         logging.error(f"Falha ao acessar o site: {e}")
 
 if __name__ == "__main__":
     acessar_site()
-    
-   
